@@ -1,0 +1,227 @@
+version: 1.2.8
+cache: true
+
+# ==========================================
+# CORE CONFIGURATION
+# ==========================================
+
+# Registration and Authentication
+registration:
+  socialLogins: []
+
+# File Upload Configuration
+fileConfig:
+  # Agent file settings
+  endpoints:
+    agents:
+      fileLimit: 15              # Increased for better productivity
+      fileSizeLimit: 100         # MB - Increased for larger documents
+      totalSizeLimit: 200        # MB - Increased for batch processing
+      supportedMimeTypes:
+        - "text/plain"
+        - "text/markdown"        # Added for documentation
+        - "application/pdf"
+        - "application/json"
+        - "text/csv"
+        - "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        - "application/vnd.openxmlformats-officedocument.wordprocessingml.document"  # Added Word support
+  # Global file settings
+  serverFileSizeLimit: 200       # MB - Increased for better capacity
+  avatarSizeLimit: 5             # MB - Increased for high-res avatars
+
+# User Interface Configuration
+interface:
+  customWelcome: 'Welcome to LibreChat AI Hub! 🚀 Your intelligent assistant for research, content creation, and workflow automation.'
+  privacyPolicy:
+    externalUrl: 'https://librechat.ai/privacy'
+    openNewTab: true
+  termsOfService:
+    externalUrl: 'https://librechat.ai/tos'
+    openNewTab: true
+
+# ==========================================
+# MCP SERVERS CONFIGURATION
+# ==========================================
+
+mcpServers:
+  # Research AI Agent - Multi-agent research system
+  research_ai_agent:
+    type: stdio
+    command: python3
+    args:
+      - /app/mcps/research-ai-agent/mcp_simple.py
+    timeout: 300000
+    description: "Advanced multi-agent research system with comprehensive analysis"
+    instructions: |
+      🔬 RESEARCH TOOL OUTPUT PROTOCOL:
+      1. Display COMPLETE tool output exactly as received
+      2. Include ALL content between 🚨 markers
+      3. Preserve formatting: emojis, sections, bullet points
+      4. Never summarize research reports
+      5. Present full findings, insights, and recommendations
+
+  # Human-in-the-Loop Agent - Workflow approval system  
+  human_in_loop_agent:
+    type: stdio
+    command: python3
+    args:
+      - /app/mcps/human-in-loop-agent/mcp_hil_simple.py
+    timeout: 300000
+    description: "Human-in-the-Loop workflows for content approval and task planning"
+    instructions: |
+      🔄 HIL WORKFLOW OUTPUT PROTOCOL:
+      1. Display COMPLETE workflow output exactly as received
+      2. Include ALL content between 🚨 markers  
+      3. Show workflow ID, generated content, options, instructions
+      4. Never summarize HIL workflow responses
+      5. Guide users through approval process with complete information
+
+# ==========================================
+# ENDPOINTS CONFIGURATION
+# ==========================================
+
+endpoints:
+  agents:
+    # Performance and capability settings
+    capabilities: ["execute_code", "file_search", "actions", "tools"]
+    recursionLimit: 75           # Increased for complex workflows
+    maxCitations: 50             # Increased for comprehensive research
+    disableDuplicateMessages: false
+    toolChoice: "auto"
+    
+    # Available models for agents
+    agentModels:
+      - "gpt-4o"                 # Latest GPT-4 optimized
+      - "gpt-4"
+      - "gpt-4-turbo" 
+      - "claude-3-5-sonnet-latest"  # Added Claude support
+    
+    # Global system prompt for tool output handling
+    systemPrompt: |
+      🚨 UNIVERSAL TOOL OUTPUT PROTOCOL 🚨
+      
+      For ANY tool with 🚨 markers:
+      ✅ DISPLAY complete content between markers
+      ✅ PRESERVE all formatting, emojis, structure
+      ✅ SHOW full reports/workflows as primary response
+      ❌ NEVER summarize, paraphrase, or truncate
+      ❌ NEVER add interpretation before showing output
+      
+      Tool output = 80%+ of response. Brief context only AFTER complete display.
+    
+    # ==========================================
+    # SPECIALIZED AGENTS
+    # ==========================================
+    agents:
+      # Research Specialists
+      - name: "Research Assistant"
+        description: "Advanced AI research assistant with comprehensive analysis capabilities"
+        avatar: "🔍"
+        model: "gpt-4o"
+        tools: ["research_quick", "research_comprehensive"]
+        instructions: |
+          🔬 Research Specialist focused on comprehensive analysis and data synthesis.
+          
+          PROTOCOL: Display complete research outputs exactly as received.
+          TOOLS: research_quick (fast insights), research_comprehensive (detailed reports)
+          FORMAT: Present full tool output first, then brief strategic context.
+
+      - name: "Strategic Analyst"
+        description: "Business strategy analyst with market intelligence capabilities"
+        avatar: "📊" 
+        model: "gpt-4o"
+        tools: ["research_quick", "research_comprehensive"]
+        instructions: |
+          📊 Strategic business analyst combining research with commercial insights.
+          
+          PROTOCOL: Display complete tool outputs, then provide business context.
+          FOCUS: Market intelligence, competitive analysis, strategic recommendations.
+          FORMAT: Full research display + strategic interpretation.
+
+      # Human-in-the-Loop Specialists
+      - name: "Workflow Approver"
+        description: "Human-in-the-Loop workflow manager for approval processes"
+        avatar: "🔄"
+        model: "gpt-4o"
+        tools: ["start_content_approval", "start_task_planning", "start_document_review", "resume_workflow", "get_workflow_status", "list_active_workflows"]
+        instructions: |
+          🔄 HIL Workflow Manager for approval processes and human oversight.
+          
+          PROTOCOL: Display complete workflow information exactly as received.
+          PATTERNS: Content approval, task planning, document review workflows.
+          GUIDANCE: Help users understand workflow states and next steps.
+
+      - name: "Content Reviewer"
+        description: "Content generation specialist with human approval integration"
+        avatar: "✏️"
+        model: "gpt-4o" 
+        tools: ["start_content_approval", "resume_workflow", "get_workflow_status", "list_active_workflows"]
+        instructions: |
+          ✏️ Content specialist with human oversight for quality assurance.
+          
+          PROTOCOL: Display complete content workflows exactly as received.
+          FOCUS: Blog posts, marketing content, documentation, creative writing.
+          PROCESS: Generate → Review → Approve → Finalize with human input.
+
+      # Productivity Agents
+      - name: "Task Planner"
+        description: "Project planning and task management with human oversight"
+        avatar: "📋"
+        model: "gpt-4o"
+        tools: ["start_task_planning", "resume_workflow", "get_workflow_status", "research_quick"]
+        instructions: |
+          📋 Project planner combining research with task breakdown and human approval.
+          
+          PROTOCOL: Display complete workflow outputs for planning processes.
+          CAPABILITIES: Task decomposition, timeline planning, resource allocation.
+          INTEGRATION: Research insights + structured planning + human validation.
+
+      - name: "Document Analyst"
+        description: "Document analysis and review with human verification"
+        avatar: "📄"
+        model: "gpt-4o"
+        tools: ["start_document_review", "resume_workflow", "research_quick", "get_workflow_status"]
+        instructions: |
+          📄 Document analyst providing comprehensive review with human verification.
+          
+          PROTOCOL: Display complete analysis workflows exactly as received.
+          CAPABILITIES: Content analysis, accuracy verification, insight extraction.
+          VALIDATION: AI analysis + human verification for quality assurance.
+
+# ==========================================
+# CUSTOM ENDPOINTS
+# ==========================================
+
+  custom:
+    # OpenRouter Configuration
+    - name: "OpenRouter"
+      apiKey: "${OPENROUTER_KEY}"
+      baseURL: "https://openrouter.ai/api/v1"
+      models:
+        default: ["gpt-4o", "claude-3-5-sonnet-latest"]  # Updated defaults
+        fetch: true                                       # Enable model fetching
+      titleConvo: true
+      titleModel: "gpt-4o"                               # Updated to latest
+      summarize: false                                   # Disable auto-summarization
+      summaryModel: "gpt-4o"
+      forcePrompt: false
+      modelDisplayLabel: "OpenRouter"
+      
+    # Ollama Local Models
+    - name: "Ollama"
+      apiKey: "ollama"
+      baseURL: "http://host.docker.internal:11434/v1/"
+      models:
+        default: [
+          "qwen2.5:7b",
+          "llama3.1:8b",                                  # Added popular model
+          "mistral:7b",                                   # Added alternative
+          "codegemma:7b-instruct",
+          "llava:7b"
+        ]
+        fetch: true                                       # Enable if supported
+      titleConvo: true
+      titleModel: "qwen2.5:7b"
+      titleMethod: "completion"
+      forcePrompt: false
+      userIdQuery: false
