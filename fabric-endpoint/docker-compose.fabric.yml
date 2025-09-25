@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  fabric-endpoint:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fabric-endpoint
+    ports:
+      - "8081:8081"
+    environment:
+      # Fabric Configuration
+      - FABRIC_BASE_URL=http://localhost:8080
+      - FABRIC_API_KEY=${FABRIC_API_KEY:-}
+      
+      # AI Model API Keys - Fabric sẽ sử dụng để gọi AI models
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      
+      # Flask Configuration
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+      
+    volumes:
+      # Mount fabric config để persist patterns và settings
+      - fabric_config:/home/fabricuser/.config/fabric
+      
+    networks:
+      - librechat-network
+      
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  fabric_config:
+    driver: local
+
+networks:
+  librechat-network:
+    external: true

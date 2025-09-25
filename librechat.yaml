@@ -116,3 +116,33 @@ endpoints:
       forcePrompt: false
       userIdQuery: false
 
+    # Fabric AI Patterns - Augment humans using AI (Independent Service)
+    - name: "Fabric AI"
+      apiKey: "fabric-key"
+      baseURL: "http://host.docker.internal:8081/v1/"
+      models:
+        default: [
+          "fabric-summarize",
+          "fabric-analyze_claims", 
+          "fabric-extract_wisdom",
+          "fabric-improve_writing",
+          "fabric-translate",
+          "fabric-create_quiz",
+          "fabric-analyze_paper",
+          "fabric-write_essay",
+          "fabric-create_report",
+          "fabric-extract_insights",
+          "fabric-create_outline",
+          "fabric-analyze_code",
+          "fabric-debug_code",
+          "fabric-explain_code",
+          "fabric-create_presentation"
+        ]
+        fetch: false                                       # Fabric provides static model list
+      titleConvo: true
+      titleModel: "fabric-summarize"
+      titleMethod: "completion"
+      forcePrompt: false
+      userIdQuery: false
+      description: "Fabric AI framework với các patterns chuyên biệt để phân tích, tóm tắt và cải thiện nội dung"
+
