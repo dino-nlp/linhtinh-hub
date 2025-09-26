@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  fabric-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: fabric-api
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=false
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./app:/app/app
+    restart: unless-stopped
+    networks:
+      - fabric-network
+
+networks:
+  fabric-network:
+    driver: bridge
